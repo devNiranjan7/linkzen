@@ -5,9 +5,22 @@ import { auth } from "@/auth.js";
 
 export async function POST(request) {
     try {
+        const session = await auth();
+        if (!session) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                { status: 401 },
+            );
+        }
         await connectDB();
         const body = await request.json();
-        const { name, email, githubId, handle, links } = body;
+        const { handle, links } = body;
+        const name = session.user.name;
+        const email = session.user.email;
+        const githubId = session.user.id;
         const existingUser = await User.findOne({ handle });
         if (existingUser) {
             return NextResponse.json(
@@ -55,10 +68,23 @@ export async function POST(request) {
 
 export async function PUT(request) {
     try {
+        const session = await auth();
+
+        if (!session) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                { status: 401 },
+            );
+        }
         await connectDB();
         const body = await request.json();
-        const { email, handle, links } = body;
-        const currentUser = await User.findOne({ email });
+        const { handle, links } = body;
+        const currentUser = await User.findOne({
+            email: session.user.email,
+        });
         if (!currentUser) {
             return NextResponse.json(
                 {
@@ -102,9 +128,8 @@ export async function PUT(request) {
     }
 }
 
-export async function DELETE(request) {
+export async function DELETE() {
     try {
-        await connectDB();
         const session = await auth();
         if (!session) {
             return NextResponse.json(
@@ -115,8 +140,10 @@ export async function DELETE(request) {
                 { status: 401 },
             );
         }
-
-        const user = await User.findOne({ email: session.user.email });
+        await connectDB();
+        const user = await User.findOne({
+            email: session.user.email,
+        });
         if (!user) {
             return NextResponse.json(
                 {
@@ -126,7 +153,9 @@ export async function DELETE(request) {
                 { status: 404 },
             );
         }
-        await User.deleteOne({ email: session.user.email });
+        await User.deleteOne({
+            _id: user._id,
+        });
         return NextResponse.json(
             {
                 success: true,

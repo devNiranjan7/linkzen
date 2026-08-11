@@ -99,9 +99,6 @@ export default function LinkForm({ mode, initialData }) {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    name: session.user.name,
-                    email: session.user.email,
-                    githubId: session.user.id,
                     handle: form.handle,
                     links: form.links,
                 }),
@@ -116,11 +113,12 @@ export default function LinkForm({ mode, initialData }) {
                 }, 1000);
             } else {
                 toast.error(data.message);
+                setLoading(false);
             }
         } catch (error) {
             toast.error("Something went wrong");
+            setLoading(false);
         }
-        setLoading(false);
     };
     const handleDelete = async () => {
         const confirmDelete = window.confirm(
@@ -130,12 +128,6 @@ export default function LinkForm({ mode, initialData }) {
         try {
             const response = await fetch("/api/user", {
                 method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: session.user.email,
-                }),
             });
             const data = await response.json();
             if (data.success) {

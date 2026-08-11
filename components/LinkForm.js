@@ -257,7 +257,7 @@ export default function LinkForm({ mode, initialData }) {
             </div>
             <div className="w-full lg:w-1/3 p-5 flex justify-center items-center">
                 <Image
-                    src="/generate-page.png"
+                    src="/generate.png"
                     width={700}
                     height={700}
                     loading="eager"
